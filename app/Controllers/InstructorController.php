@@ -120,98 +120,28 @@ class InstructorController extends Controller
     public function courses()
     {
         try {
-            // Fetch dashboard data to get courses
-            $dashboardResponse = $this->client->get($this->apiBase . 'instructor/dashboard');
-            if ($dashboardResponse->getStatusCode() !== 200) {
-                throw new \Exception('Failed to fetch courses: ' . $dashboardResponse->getReasonPhrase());
+            // Fetch paginated courses data from the API
+            $response = $this->client->get($this->apiBase . 'courses');
+            if ($response->getStatusCode() !== 200) {
+                throw new \Exception('Failed to fetch courses: ' . $response->getReasonPhrase());
             }
-            $dashboardData = json_decode($dashboardResponse->getBody(), true);
-            
-            // Extract courses from dashboard data
-            $courses = $dashboardData['courses'] ?? [];
-            
-            // Process each course to add assignment count and progress
-            foreach ($courses as &$course) {
-                // Get assignments count for this course
-                try {
-                    $assignmentsResponse = $this->client->get($this->apiBase . "courses/{$course['id']}/assignments");
-                    $assignmentsData = json_decode($assignmentsResponse->getBody(), true);
-                    
-                    // Debug the assignments response
-                    error_log("Assignments response for course {$course['id']}: " . print_r($assignmentsData, true));
-                    
-                    // Get total assignments from the paginated response
-                    if (isset($assignmentsData['data']['total'])) {
-                        $course['total_assignments'] = (int)$assignmentsData['data']['total'];
-                    } else {
-                        $course['total_assignments'] = 0;
-                    }
-                    
-                    error_log("Total assignments for course {$course['id']}: {$course['total_assignments']}");
-                } catch (\Exception $e) {
-                    error_log("Error fetching assignments for course {$course['id']}: " . $e->getMessage());
-                    $course['total_assignments'] = 0;
-                }
+            $data = json_decode($response->getBody(), true);
+            $courses = $data['data'] ?? [];
 
-                // Calculate course progress based on dates
-                if (!empty($course['start_date']) && !empty($course['end_date'])) {
-                    try {
-                        $startDate = new \DateTime($course['start_date']);
-                        $endDate = new \DateTime($course['end_date']);
-                        $today = new \DateTime();
-                        
-                        // If course hasn't started yet
-                        if ($today < $startDate) {
-                            $course['progress'] = 0;
-                        }
-                        // If course has ended
-                        elseif ($today > $endDate) {
-                            $course['progress'] = 100;
-                        }
-                        // If course is in progress
-                        else {
-                            // Calculate total days between start and end
-                            $totalDays = $startDate->diff($endDate)->days;
-                            
-                            // If it's the start date, show 1% progress
-                            if ($today->format('Y-m-d') === $startDate->format('Y-m-d')) {
-                                $course['progress'] = 1;
-                            } else {
-                                // Calculate days elapsed since start
-                                $daysElapsed = $startDate->diff($today)->days;
-                                
-                                // Calculate progress percentage
-                                if ($totalDays > 0) {
-                                    $progress = ($daysElapsed / $totalDays) * 100;
-                                    // Ensure minimum progress is 1% if course has started
-                                    $course['progress'] = max(1, round($progress));
-                                } else {
-                                    $course['progress'] = 1;
-                                }
-                            }
-                        }
-                        
-                        error_log("Course {$course['id']} progress calculation:");
-                        error_log("Start date: " . $startDate->format('Y-m-d'));
-                        error_log("End date: " . $endDate->format('Y-m-d'));
-                        error_log("Today: " . $today->format('Y-m-d'));
-                        error_log("Total days: " . ($totalDays ?? 0));
-                        error_log("Days elapsed: " . ($daysElapsed ?? 0));
-                        error_log("Progress: {$course['progress']}%");
-                    } catch (\Exception $e) {
-                        error_log("Error calculating progress for course {$course['id']}: " . $e->getMessage());
-                        $course['progress'] = 0;
-                    }
-                } else {
-                    $course['progress'] = 0;
-                }
-            }
-            
-            $this->view('instructor/courses', ['courses' => $courses]);
+            // Fetch instructor profile for nav
+            $dashboardResponse = $this->client->get($this->apiBase . 'instructor/dashboard');
+            $dashboardData = json_decode($dashboardResponse->getBody(), true);
+            $profile = $dashboardData['profile'] ?? [];
+
+            $this->view('instructor/courses', [
+                'courses' => $courses,
+                'profile' => $profile
+            ]);
         } catch (\Exception $e) {
             $this->view('instructor/courses', [
                 'error' => 'Failed to load courses: ' . $e->getMessage(),
-                'courses' => []
+                'courses' => [],
+                'profile' => []
             ]);
         }
     }
@@ -261,6 +191,72 @@ class InstructorController extends Controller
         } else {
             // Display the create course form
             $this->view('instructor/courses/create');
+        }
+    }
+
+    public function editCourse($courseId)
+    {
+        try {
+            // Fetch course details
+            $response = $this->client->get($this->apiBase . "courses/{$courseId}");
+            if ($response->getStatusCode() !== 200) {
+                throw new \Exception('Failed to fetch course: ' . $response->getReasonPhrase());
+            }
+            $courseData = json_decode($response->getBody(), true);
+            $course = $courseData['data'] ?? [];
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                try {
+                    // Validate required fields
+                    $requiredFields = ['title', 'description', 'start_date', 'end_date', 'level', 'category', 'max_students', 'status'];
+                    foreach ($requiredFields as $field) {
+                        if (empty($_POST[$field])) {
+                            throw new \Exception("Please fill in all required fields.");
+                        }
+                    }
+
+                    // Prepare course data
+                    $courseData = [
+                        'title' => $_POST['title'],
+                        'description' => $_POST['description'],
+                        'start_date' => $_POST['start_date'],
+                        'end_date' => $_POST['end_date'],
+                        'level' => $_POST['level'],
+                        'category' => $_POST['category'],
+                        'max_students' => (int)$_POST['max_students'],
+                        'prerequisites' => $_POST['prerequisites'] ?? null,
+                        'status' => $_POST['status']
+                    ];
+
+                    // Send request to update course
+                    $response = $this->client->put($this->apiBase . "courses/{$courseId}", [
+                        'json' => $courseData
+                    ]);
+
+                    if ($response->getStatusCode() === 200) {
+                        // Redirect to courses list on success
+                        header('Location: /lms-frontend/public/instructor/courses');
+                        exit;
+                    } else {
+                        throw new \Exception('Failed to update course. Please try again.');
+                    }
+                } catch (\Exception $e) {
+                    $this->view('instructor/courses/edit', [
+                        'error' => $e->getMessage(),
+                        'course' => $course
+                    ]);
+                }
+            } else {
+                // Display the edit course form
+                $this->view('instructor/courses/edit', [
+                    'course' => $course
+                ]);
+            }
+        } catch (\Exception $e) {
+            $this->view('instructor/courses/edit', [
+                'error' => 'Failed to load course: ' . $e->getMessage(),
+                'course' => []
+            ]);
         }
     }
 
@@ -416,7 +412,7 @@ class InstructorController extends Controller
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
-                $response = $this->client->patch($this->apiBase . "submissions/{$submissionId}", [
+                $response = $this->client->patch($this->apiBase . "courses/{$courseId}/assignments/{$assignmentId}/submissions/{$submissionId}", [
                     'json' => [
                         'score' => $_POST['score'],
                         'feedback' => $_POST['feedback'],
@@ -426,21 +422,21 @@ class InstructorController extends Controller
                 header("Location: /lms-frontend/public/instructor/courses/{$courseId}/assignments/{$assignmentId}/submissions");
                 exit;
             } catch (\Exception $e) {
-                $this->view('instructor/grade-submission', [
+                $this->view('instructor/courses/assignments/grade', [
                     'error' => 'Failed to grade submission: ' . $e->getMessage()
                 ]);
             }
         } else {
             try {
-                $response = $this->client->get($this->apiBase . "submissions/{$submissionId}");
+                $response = $this->client->get($this->apiBase . "courses/{$courseId}/assignments/{$assignmentId}/submissions/{$submissionId}");
                 $submission = json_decode($response->getBody(), true)['data'] ?? [];
-                $this->view('instructor/grade-submission', [
+                $this->view('instructor/courses/assignments/grade', [
                     'courseId' => $courseId,
                     'assignmentId' => $assignmentId,
                     'submission' => $submission
                 ]);
             } catch (\Exception $e) {
-                $this->view('instructor/grade-submission', [
+                $this->view('instructor/courses/assignments/grade', [
                     'error' => 'Failed to load submission: ' . $e->getMessage()
                 ]);
             }
@@ -467,13 +463,28 @@ class InstructorController extends Controller
     {
         try {
             $client = $this->client;
-            // Fetch course details (should now include student_count, total_assignments, etc.)
-            $response = $client->get($this->apiBase . "courses/{$courseId}");
+            // Fetch course details with modules and items
+            $response = $client->get($this->apiBase . "courses/{$courseId}", [
+                'query' => [
+                    'include' => 'modules.items'
+                ]
+            ]);
             if ($response->getStatusCode() !== 200) {
                 throw new \Exception('Failed to fetch course: ' . $response->getReasonPhrase());
             }
             $courseResponse = json_decode($response->getBody(), true);
             $course = $courseResponse['data'] ?? [];
+
+            // Calculate total items and modules
+            $totalItems = 0;
+            $totalModules = count($course['modules'] ?? []);
+            if (!empty($course['modules'])) {
+                foreach ($course['modules'] as $module) {
+                    $totalItems += count($module['items'] ?? []);
+                }
+            }
+            $course['total_items'] = $totalItems;
+            $course['module_count'] = $totalModules;
 
             // Fetch instructor profile for nav (still using dashboard, or replace with /instructor/profile if available)
             $dashboardResponse = $client->get($this->apiBase . 'instructor/dashboard');
@@ -482,7 +493,8 @@ class InstructorController extends Controller
 
             $this->view('instructor/courses/show', [
                 'course' => $course,
-                'profile' => $profile
+                'profile' => $profile,
+                'modules' => $course['modules'] ?? []
             ]);
         } catch (\Exception $e) {
             $this->view('instructor/courses/show', [
@@ -583,5 +595,39 @@ class InstructorController extends Controller
                 'profile' => []
             ]);
         }
+    }
+
+    public function moduleItem($itemId)
+    {
+        try {
+            $response = $this->client->get($this->apiBase . "module-items/{$itemId}", [
+                'query' => [
+                    'include' => 'module.course'
+                ]
+            ]);
+            $data = json_decode($response->getBody(), true);
+            $item = $data['data'] ?? [];
+
+            // Fetch instructor profile for nav
+            $dashboardResponse = $this->client->get($this->apiBase . 'instructor/dashboard');
+            $dashboardData = json_decode($dashboardResponse->getBody(), true);
+            $profile = $dashboardData['profile'] ?? [];
+
+            $this->view('instructor/courses/module_item', [
+                'item' => $item,
+                'profile' => $profile
+            ]);
+        } catch (\Exception $e) {
+            $this->view('instructor/courses/module_item', [
+                'error' => 'Failed to load module item: ' . $e->getMessage(),
+                'item' => []
+            ]);
+        }
+    }
+
+    public function index()
+    {
+        header('Location: /lms-frontend/public/instructor/dashboard');
+        exit;
     }
 } 

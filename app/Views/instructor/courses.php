@@ -65,7 +65,7 @@
         </div>
 
         <!-- Courses Grid -->
-        <?php if (empty($courses)): ?>
+        <?php if (empty($courses['data'])): ?>
             <div class="text-center py-5">
                 <i class="fas fa-book fa-3x text-muted mb-3"></i>
                 <h4 class="text-muted">No courses found</h4>
@@ -76,63 +76,80 @@
             </div>
         <?php else: ?>
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                <?php foreach ($courses as $course): ?>
+                <?php foreach (($courses['data'] ?? []) as $course): ?>
                     <div class="col">
-                        <div class="card h-100 shadow-sm">
+                        <div class="card h-100 shadow-sm border-0">
+                            <?php if (!empty($course['cover_image'])): ?>
+                                <img src="<?= htmlspecialchars($course['cover_image']) ?>" class="card-img-top" alt="Course Cover" style="object-fit:cover;max-height:180px;">
+                            <?php endif; ?>
                             <div class="card-body">
-                                <h5 class="card-title"><?= htmlspecialchars($course['title']) ?></h5>
-                                <p class="card-text text-muted small">
-                                    <?= htmlspecialchars(substr($course['description'] ?? '', 0, 100)) ?>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title mb-1"><?= htmlspecialchars($course['title']) ?></h5>
+                                        <div class="mb-2">
+                                            <span class="badge bg-primary me-1"> <?= ucfirst($course['level'] ?? 'Not specified') ?> </span>
+                                            <span class="badge bg-secondary"> <?= ucfirst($course['category'] ?? 'Uncategorized') ?> </span>
+                                        </div>
+                                    </div>
+                                    <?php if (!empty($course['is_published'])): ?>
+                                        <span class="badge bg-success align-self-start">Published</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning text-dark align-self-start">Draft</span>
+                                    <?php endif; ?>
+                                </div>
+                                <p class="text-muted small mb-2">
+                                    <?= htmlspecialchars(substr($course['description'] ?? 'No description provided.', 0, 100)) ?>
                                     <?= strlen($course['description'] ?? '') > 100 ? '...' : '' ?>
                                 </p>
-                                <div class="mb-3">
-                                    <span class="badge bg-primary me-1"><?= ucfirst($course['level'] ?? 'Not specified') ?></span>
-                                    <span class="badge bg-secondary"><?= ucfirst($course['category'] ?? 'Uncategorized') ?></span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-users me-1"></i>
-                                        <?= $course['student_count'] ?? 0 ?> Students
-                                    </small>
-                                    <small class="text-muted">
-                                        <i class="fas fa-tasks me-1"></i>
-                                        <?= $course['assignment_count'] ?? 0 ?> Assignments
-                                    </small>
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar me-1"></i>
-                                        <?php if (!empty($course['start_date']) && !empty($course['end_date'])): ?>
-                                            <?= date('M d, Y', strtotime($course['start_date'])) ?> - 
-                                            <?= date('M d, Y', strtotime($course['end_date'])) ?>
-                                        <?php else: ?>
-                                            Dates not set
-                                        <?php endif; ?>
-                                    </small>
-                                </div>
-                                <div class="progress mb-3" style="height: 5px;">
-                                    <div class="progress-bar" role="progressbar" 
-                                         style="width: <?= $course['progress'] ?? 0 ?>%"
-                                         aria-valuenow="<?= $course['progress'] ?? 0 ?>" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
+                                <div class="row text-center mb-2 g-1">
+                                    <div class="col-6 col-md-4">
+                                        <span class="text-muted small"><i class="fas fa-users me-1"></i> <?= $course['student_count'] ?? 0 ?> Students</span>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <span class="text-muted small"><i class="fas fa-tasks me-1"></i> <?= $course['assignment_count'] ?? 0 ?> Assignments</span>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <span class="text-muted small"><i class="fas fa-layer-group me-1"></i> <?= $course['module_count'] ?? 0 ?> Modules</span>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <span class="text-muted small"><i class="fas fa-list me-1"></i> <?= $course['total_items'] ?? 0 ?> Items</span>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <span class="text-muted small"><i class="fas fa-calendar me-1"></i>
+                                            <?php if (!empty($course['start_date']) && !empty($course['end_date'])): ?>
+                                                <?= date('M d, Y', strtotime($course['start_date'])) ?> - <?= date('M d, Y', strtotime($course['end_date'])) ?>
+                                            <?php else: ?>
+                                                Dates not set
+                                            <?php endif; ?>
+                                        </span>
                                     </div>
                                 </div>
-                                <small class="text-muted d-block text-end">
-                                    Course Progress: <?= $course['progress'] ?? 0 ?>%
-                                </small>
+                                <?php if (isset($course['progress'])): ?>
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold small mb-1">Course Progress</label>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: <?= $course['progress'] ?? 0 ?>%"
+                                             aria-valuenow="<?= $course['progress'] ?? 0 ?>"
+                                             aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Progress: <?= $course['progress'] ?? 0 ?>%</small>
+                                </div>
+                                <?php endif; ?>
                             </div>
                             <div class="card-footer bg-white border-top-0">
-                                <div class="btn-group w-100">
-                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>" 
-                                       class="btn btn-outline-primary">
+                                <div class="btn-group w-100 d-flex" role="group">
+                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>" class="btn btn-outline-primary flex-fill">
                                         <i class="fas fa-eye me-1"></i> View
                                     </a>
-                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/assignments" 
-                                       class="btn btn-outline-success">
+                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/assignments" class="btn btn-outline-success flex-fill">
                                         <i class="fas fa-tasks me-1"></i> Assignments
                                     </a>
-                                    <button type="button" 
-                                            class="btn btn-outline-secondary dropdown-toggle" 
-                                            data-bs-toggle="dropdown">
+                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/students" class="btn btn-outline-info flex-fill">
+                                        <i class="fas fa-user-graduate me-1"></i> Students
+                                    </a>
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle flex-shrink-0" data-bs-toggle="dropdown">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -142,19 +159,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/students">
-                                                <i class="fas fa-user-graduate me-1"></i> Manage Students
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/progress">
-                                                <i class="fas fa-chart-line me-1"></i> View Progress
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <a class="dropdown-item text-danger" href="#" 
-                                               onclick="return confirm('Are you sure you want to delete this course?')">
+                                            <a class="dropdown-item text-danger" href="#" onclick="return confirm('Are you sure you want to delete this course?')">
                                                 <i class="fas fa-trash me-1"></i> Delete Course
                                             </a>
                                         </li>
@@ -165,6 +170,50 @@
                     </div>
                 <?php endforeach; ?>
             </div>
+            <!-- Pagination Controls -->
+            <?php if (!empty($courses['total']) && !empty($courses['per_page']) && ceil($courses['total'] / $courses['per_page']) > 1): ?>
+                <div class="mt-4">
+                    <nav aria-label="Course pagination">
+                        <ul class="pagination justify-content-center">
+                            <?php
+                            $currentPage = $courses['current_page'] ?? 1;
+                            $lastPage = ceil($courses['total'] / $courses['per_page']);
+                            
+                            // Previous page link
+                            if ($currentPage > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<?= $currentPage - 1 ?>" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            <?php endif;
+
+                            // Page numbers
+                            for ($page = 1; $page <= $lastPage; $page++):
+                                // Show current page, first page, last page, and pages around current page
+                                if ($page == 1 || $page == $lastPage || ($page >= $currentPage - 2 && $page <= $currentPage + 2)): ?>
+                                    <li class="page-item <?= $page == $currentPage ? 'active' : '' ?>">
+                                        <a class="page-link" href="?page=<?= $page ?>"><?= $page ?></a>
+                                    </li>
+                                <?php elseif ($page == $currentPage - 3 || $page == $currentPage + 3): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif;
+                            endfor;
+
+                            // Next page link
+                            if ($currentPage < $lastPage): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<?= $currentPage + 1 ?>" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 

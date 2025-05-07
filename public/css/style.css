@@ -346,3 +346,171 @@ footer a:hover {
     color: white !important;
     transform: none !important;
 }
+
+/* Course Creation Page */
+.course-creation-section {
+    padding-top: 6rem;
+    padding-bottom: 3rem;
+    min-height: 100vh;
+    background: var(--light-bg);
+}
+
+.course-creation-section .card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.course-creation-section .card-header {
+    background-color: white;
+    border-bottom: 1px solid #e3e6f0;
+    padding: 1.25rem 1.5rem;
+}
+
+.course-creation-section .card-body {
+    padding: 1.5rem;
+}
+
+/* Mobile adjustments for course creation */
+@media (max-width: 768px) {
+    .course-creation-section {
+        padding-top: 5rem;
+        padding-bottom: 0;
+    }
+
+    .course-creation-section .container {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .course-creation-section .card {
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .course-creation-section .card-body {
+        padding: 1.25rem;
+    }
+
+    .course-creation-section .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .course-creation-section .d-md-flex {
+        flex-direction: column;
+    }
+
+    .course-creation-section .me-md-2 {
+        margin-right: 0 !important;
+    }
+}
+
+/* --- Enhanced Course Card Styles --- */
+.card.h-100 {
+    border-radius: 1rem;
+    box-shadow: 0 2px 16px rgba(44, 62, 80, 0.08), 0 1.5px 4px rgba(44, 62, 80, 0.04);
+    transition: box-shadow 0.2s, transform 0.2s;
+    margin-bottom: 1.5rem;
+    background: #fff;
+}
+.card.h-100:hover {
+    box-shadow: 0 8px 32px rgba(44, 62, 80, 0.13), 0 2px 8px rgba(44, 62, 80, 0.08);
+    transform: translateY(-2px) scale(1.01);
+}
+.card-img-top {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    object-fit: cover;
+    width: 100%;
+    min-height: 120px;
+    max-height: 180px;
+}
+.card-body {
+    padding: 1.25rem 1.25rem 0.75rem 1.25rem;
+}
+.card-footer {
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    padding: 0.75rem 1.25rem 1rem 1.25rem;
+    background: #f8f9fc;
+}
+.card .badge {
+    font-size: 0.85em;
+    margin-bottom: 0.25rem;
+}
+.card .btn-group .btn {
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+.card .btn-group .btn:last-child {
+    margin-right: 0;
+}
+.card .dropdown-menu {
+    min-width: 180px;
+}
+
+/* Grid spacing for course cards */
+.row.g-4 > .col {
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive adjustments for course cards */
+@media (max-width: 992px) {
+    .row.row-cols-md-2 > .col,
+    .row.row-cols-lg-3 > .col {
+        margin-bottom: 1.5rem;
+    }
+    .card-img-top {
+        min-height: 100px;
+        max-height: 140px;
+    }
+}
+@media (max-width: 768px) {
+    .card.h-100 {
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .card-img-top {
+        min-height: 80px;
+        max-height: 100px;
+    }
+    .card-body, .card-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    .row.g-4 > .col {
+        margin-bottom: 1rem;
+    }
+}
+@media (max-width: 576px) {
+    .card.h-100 {
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .card-img-top {
+        min-height: 60px;
+        max-height: 80px;
+    }
+    .card-body, .card-footer {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+/* Badge spacing for course meta */
+.card .row .col-6 {
+    margin-bottom: 0.25rem;
+}
+
+/* Ensure buttons and badges wrap on small screens */
+@media (max-width: 400px) {
+    .card .btn-group {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .card .btn-group .btn {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 0.25rem;
+    }
+}

@@ -77,7 +77,43 @@ class App
             exit;
         }
 
-        // Handle instructor assignment submissions route
+        // Special handling for /instructor/courses/{id}/edit
+        if (
+            isset($url[0], $url[1], $url[2], $url[3]) &&
+            strtolower($url[0]) === 'instructor' &&
+            strtolower($url[1]) === 'courses' &&
+            is_numeric($url[2]) &&
+            strtolower($url[3]) === 'edit'
+        ) {
+            $controllerClass = '\App\Controllers\InstructorController';
+            $controller = new $controllerClass;
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $controller->editCourse($url[2]);
+            } else {
+                $controller->editCourse($url[2]);
+            }
+            exit;
+        }
+
+        // Handle instructor grade submission route
+        if (
+            isset($url[0], $url[1], $url[2], $url[3], $url[4], $url[5], $url[6], $url[7]) &&
+            strtolower($url[0]) === 'instructor' &&
+            strtolower($url[1]) === 'courses' &&
+            is_numeric($url[2]) &&
+            strtolower($url[3]) === 'assignments' &&
+            is_numeric($url[4]) &&
+            strtolower($url[5]) === 'submissions' &&
+            is_numeric($url[6]) &&
+            strtolower($url[7]) === 'grade'
+        ) {
+            $controllerClass = '\App\Controllers\InstructorController';
+            $controller = new $controllerClass;
+            $controller->gradeSubmission($url[2], $url[4], $url[6]);
+            exit;
+        }
+
+        // Handle instructor assignment submissions route (only for listing submissions)
         if (
             isset($url[0], $url[1], $url[2], $url[3], $url[4], $url[5]) &&
             strtolower($url[0]) === 'instructor' &&
@@ -85,7 +121,8 @@ class App
             is_numeric($url[2]) &&
             strtolower($url[3]) === 'assignments' &&
             is_numeric($url[4]) &&
-            strtolower($url[5]) === 'submissions'
+            strtolower($url[5]) === 'submissions' &&
+            (!isset($url[6]) || $url[6] === '')  // Ensure there are no more segments
         ) {
             $controllerClass = '\App\Controllers\InstructorController';
             $controller = new $controllerClass;
@@ -128,6 +165,19 @@ class App
             $controllerClass = '\App\Controllers\InstructorController';
             $controller = new $controllerClass;
             $controller->showCourse($url[2]);
+            exit;
+        }
+
+        // Special handling for /instructor/module-items/{id}
+        if (
+            isset($url[0], $url[1], $url[2]) &&
+            strtolower($url[0]) === 'instructor' &&
+            strtolower($url[1]) === 'module-items' &&
+            is_numeric($url[2])
+        ) {
+            $controllerClass = '\\App\\Controllers\\InstructorController';
+            $controller = new $controllerClass;
+            $controller->moduleItem($url[2]);
             exit;
         }
 
