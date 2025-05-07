@@ -25,12 +25,24 @@
                         <a class="nav-link" href="/lms-frontend/public/instructor/courses">Courses</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($profile['name'] ?? 'Instructor') ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/lms-frontend/public/instructor/profile">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/lms-frontend/public/auth/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-5 pt-4">
+    <div class="container mt-5 pt-5">
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger" role="alert">
                 <?= htmlspecialchars($error) ?>
@@ -40,29 +52,34 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2>Assignment Submissions</h2>
+                <h1 class="h3 mb-0 text-gray-800">Assignment Submissions</h1>
                 <p class="text-muted mb-0">
                     <?= htmlspecialchars($assignment['title'] ?? 'Untitled Assignment') ?> - 
                     <?= number_format($assignment['max_score'] ?? 0, 1) ?> Points
                 </p>
             </div>
-            <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments" class="btn btn-outline-secondary">
+            <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back to Assignments
             </a>
         </div>
 
         <!-- Submissions List -->
         <?php if (empty($submissions['data']['data'])): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">No submissions yet</h4>
-                <p class="text-muted">Students haven't submitted their work for this assignment</p>
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No submissions yet</h4>
+                    <p class="text-muted">Students haven't submitted their work for this assignment</p>
+                </div>
             </div>
         <?php else: ?>
-            <div class="card shadow-sm">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">All Submissions</h6>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>Student</th>
@@ -77,33 +94,40 @@
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <img src="<?= htmlspecialchars($submission['student']['profile_picture'] ?? '/lms-frontend/public/images/default-avatar.png') ?>" 
-                                                     alt="Student Avatar" 
-                                                     class="rounded-circle me-2"
-                                                     style="width: 32px; height: 32px; object-fit: cover;">
+                                                <?php if (isset($submission['student']) && !empty($submission['student']['profile_picture'])): ?>
+                                                    <img src="<?= htmlspecialchars($submission['student']['profile_picture']) ?>" 
+                                                         class="rounded-circle me-2" 
+                                                         width="32" height="32" 
+                                                         alt="Profile Picture">
+                                                <?php else: ?>
+                                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" 
+                                                         style="width: 32px; height: 32px;">
+                                                        <?= isset($submission['student']['name']) ? strtoupper(substr($submission['student']['name'], 0, 1)) : '?' ?>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <div>
-                                                    <div class="fw-medium"><?= htmlspecialchars($submission['student']['name'] ?? 'Unknown Student') ?></div>
-                                                    <small class="text-muted"><?= htmlspecialchars($submission['student']['email'] ?? 'No email') ?></small>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars($submission['student']['name'] ?? 'Unknown Student') ?></div>
+                                                    <div class="small text-muted"><?= htmlspecialchars($submission['student']['email'] ?? 'No email') ?></div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <span><?= date('M d, Y', strtotime($submission['submitted_at'] ?? 'now')) ?></span>
-                                                <small class="text-muted"><?= date('H:i', strtotime($submission['submitted_at'] ?? 'now')) ?></small>
+                                                <span><?= date('M j, Y', strtotime($submission['submitted_at'] ?? 'now')) ?></span>
+                                                <small class="text-muted"><?= date('g:i A', strtotime($submission['submitted_at'] ?? 'now')) ?></small>
                                             </div>
                                         </td>
                                         <td>
                                             <?php
+                                            $statusClass = [
+                                                'submitted' => 'primary',
+                                                'graded' => 'success',
+                                                'late' => 'warning',
+                                                'pending' => 'secondary'
+                                            ];
                                             $status = $submission['status'] ?? 'pending';
-                                            $statusClass = match($status) {
-                                                'submitted' => 'bg-primary',
-                                                'graded' => 'bg-success',
-                                                'late' => 'bg-warning',
-                                                default => 'bg-secondary'
-                                            };
                                             ?>
-                                            <span class="badge <?= $statusClass ?>">
+                                            <span class="badge bg-<?= $statusClass[$status] ?? 'secondary' ?>">
                                                 <?= ucfirst($status) ?>
                                             </span>
                                         </td>

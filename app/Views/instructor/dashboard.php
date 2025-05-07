@@ -44,7 +44,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-5 pt-4">
+    <div class="container mt-5 pt-5">
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger" role="alert">
                 <?= htmlspecialchars($error) ?>

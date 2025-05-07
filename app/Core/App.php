@@ -103,7 +103,31 @@ class App
         ) {
             $controllerClass = '\App\Controllers\InstructorController';
             $controller = new $controllerClass;
-            $controller->assignments($url[2]);
+            
+            // If there's an assignment ID and edit action
+            if (isset($url[4], $url[5]) && is_numeric($url[4]) && strtolower($url[5]) === 'edit') {
+                $controller->editAssignment($url[2], $url[4]);
+            }
+            // If there's just an assignment ID, show that assignment
+            else if (isset($url[4]) && is_numeric($url[4])) {
+                $controller->showAssignment($url[2], $url[4]);
+            } else {
+                $controller->assignments($url[2]);
+            }
+            exit;
+        }
+
+        // Handle instructor view single course route
+        if (
+            isset($url[0], $url[1], $url[2]) &&
+            strtolower($url[0]) === 'instructor' &&
+            strtolower($url[1]) === 'courses' &&
+            is_numeric($url[2]) &&
+            (!isset($url[3]) || $url[3] === '')
+        ) {
+            $controllerClass = '\App\Controllers\InstructorController';
+            $controller = new $controllerClass;
+            $controller->showCourse($url[2]);
             exit;
         }
 

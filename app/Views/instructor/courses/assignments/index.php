@@ -25,12 +25,24 @@
                         <a class="nav-link" href="/lms-frontend/public/instructor/courses">Courses</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($profile['name'] ?? 'Instructor') ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/lms-frontend/public/instructor/profile">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/lms-frontend/public/auth/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-5 pt-4">
+    <div class="container mt-5 pt-5">
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger" role="alert">
                 <?= htmlspecialchars($error) ?>
@@ -39,7 +51,12 @@
 
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Course Assignments</h2>
+            <div>
+                <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>" class="btn btn-secondary mb-3">
+                    <i class="fas fa-arrow-left"></i> Back to Course
+                </a>
+                <h2 class="mb-0">Course Assignments</h2>
+            </div>
             <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments/create" class="btn btn-primary">
                 <i class="fas fa-plus me-1"></i> Create Assignment
             </a>
@@ -87,8 +104,12 @@
                             </div>
                             <div class="card-footer bg-white border-top-0">
                                 <div class="btn-group w-100">
-                                    <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments/<?= $assignment['id'] ?>/submissions" 
+                                    <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments/<?= $assignment['id'] ?>" 
                                        class="btn btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i> View
+                                    </a>
+                                    <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments/<?= $assignment['id'] ?>/submissions" 
+                                       class="btn btn-outline-info">
                                         <i class="fas fa-list me-1"></i> Submissions
                                     </a>
                                     <a href="/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments/<?= $assignment['id'] ?>/edit" 
@@ -97,7 +118,7 @@
                                     </a>
                                     <button type="button" 
                                             class="btn btn-outline-danger"
-                                            onclick="if(confirm('Are you sure you want to delete this assignment?')) { 
+                                            onclick="if(confirm('Are you sure you want to delete this assignment? This action cannot be undone.')) { 
                                                 window.location.href='/lms-frontend/public/instructor/courses/<?= $courseId ?>/assignments/<?= $assignment['id'] ?>/delete'; 
                                             }">
                                         <i class="fas fa-trash me-1"></i> Delete

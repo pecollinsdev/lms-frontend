@@ -25,21 +25,40 @@
                         <a class="nav-link active" href="/lms-frontend/public/instructor/courses">Courses</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($profile['name'] ?? 'Instructor') ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/lms-frontend/public/instructor/profile">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/lms-frontend/public/auth/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-5 pt-4">
+    <div class="container mt-5 pt-5">
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger" role="alert">
                 <?= htmlspecialchars($error) ?>
             </div>
         <?php endif; ?>
 
+        <!-- Back Button -->
+        <div class="mb-2">
+            <a href="/lms-frontend/public/instructor/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>My Courses</h2>
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <h2 class="mb-0">My Courses</h2>
             <a href="/lms-frontend/public/instructor/courses/create" class="btn btn-primary">
                 <i class="fas fa-plus me-1"></i> Create New Course
             </a>
@@ -76,6 +95,10 @@
                                         <?= $course['student_count'] ?? 0 ?> Students
                                     </small>
                                     <small class="text-muted">
+                                        <i class="fas fa-tasks me-1"></i>
+                                        <?= $course['assignment_count'] ?? 0 ?> Assignments
+                                    </small>
+                                    <small class="text-muted">
                                         <i class="fas fa-calendar me-1"></i>
                                         <?php if (!empty($course['start_date']) && !empty($course['end_date'])): ?>
                                             <?= date('M d, Y', strtotime($course['start_date'])) ?> - 
@@ -87,19 +110,25 @@
                                 </div>
                                 <div class="progress mb-3" style="height: 5px;">
                                     <div class="progress-bar" role="progressbar" 
-                                         style="width: <?= $course['average_grade'] ?? 0 ?>%">
+                                         style="width: <?= $course['progress'] ?? 0 ?>%"
+                                         aria-valuenow="<?= $course['progress'] ?? 0 ?>" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
                                     </div>
                                 </div>
+                                <small class="text-muted d-block text-end">
+                                    Course Progress: <?= $course['progress'] ?? 0 ?>%
+                                </small>
                             </div>
                             <div class="card-footer bg-white border-top-0">
                                 <div class="btn-group w-100">
-                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/assignments" 
+                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>" 
                                        class="btn btn-outline-primary">
-                                        <i class="fas fa-tasks me-1"></i> Assignments
+                                        <i class="fas fa-eye me-1"></i> View
                                     </a>
-                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/progress" 
+                                    <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/assignments" 
                                        class="btn btn-outline-success">
-                                        <i class="fas fa-chart-line me-1"></i> Progress
+                                        <i class="fas fa-tasks me-1"></i> Assignments
                                     </a>
                                     <button type="button" 
                                             class="btn btn-outline-secondary dropdown-toggle" 
@@ -115,6 +144,11 @@
                                         <li>
                                             <a class="dropdown-item" href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/students">
                                                 <i class="fas fa-user-graduate me-1"></i> Manage Students
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/progress">
+                                                <i class="fas fa-chart-line me-1"></i> View Progress
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
