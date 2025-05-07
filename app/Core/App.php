@@ -60,6 +60,53 @@ class App
             exit;
         }
 
+        // Special handling for /instructor/courses/create
+        if (
+            isset($url[0], $url[1], $url[2]) &&
+            strtolower($url[0]) === 'instructor' &&
+            strtolower($url[1]) === 'courses' &&
+            strtolower($url[2]) === 'create'
+        ) {
+            $controllerClass = '\App\Controllers\InstructorController';
+            $controller = new $controllerClass;
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $controller->createCourse();
+            } else {
+                $controller->createCourse();
+            }
+            exit;
+        }
+
+        // Handle instructor assignment submissions route
+        if (
+            isset($url[0], $url[1], $url[2], $url[3], $url[4], $url[5]) &&
+            strtolower($url[0]) === 'instructor' &&
+            strtolower($url[1]) === 'courses' &&
+            is_numeric($url[2]) &&
+            strtolower($url[3]) === 'assignments' &&
+            is_numeric($url[4]) &&
+            strtolower($url[5]) === 'submissions'
+        ) {
+            $controllerClass = '\App\Controllers\InstructorController';
+            $controller = new $controllerClass;
+            $controller->submissions($url[2], $url[4]);
+            exit;
+        }
+
+        // Handle instructor course assignments route
+        if (
+            isset($url[0], $url[1], $url[2], $url[3]) &&
+            strtolower($url[0]) === 'instructor' &&
+            strtolower($url[1]) === 'courses' &&
+            is_numeric($url[2]) &&
+            strtolower($url[3]) === 'assignments'
+        ) {
+            $controllerClass = '\App\Controllers\InstructorController';
+            $controller = new $controllerClass;
+            $controller->assignments($url[2]);
+            exit;
+        }
+
         // Check controller
         if (isset($url[0]) && file_exists('../app/Controllers/' . ucfirst($url[0]) . 'Controller.php')) {
             $this->controller = ucfirst($url[0]) . 'Controller';

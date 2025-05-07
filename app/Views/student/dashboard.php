@@ -101,13 +101,13 @@
                                             <div class="card-body">
                                                 <h5 class="card-title"><?= htmlspecialchars($course['title']) ?></h5>
                                                 <p class="card-text text-muted">
-                                                    <small>Instructor: <?= htmlspecialchars($course['instructor_name']) ?></small>
+                                                    <small>Instructor: <?= htmlspecialchars($course['instructor'] ?? 'Not assigned') ?></small>
                                                 </p>
                                                 <div class="progress mb-3" style="height: 5px;">
-                                                    <div class="progress-bar" role="progressbar" style="width: <?= $course['progress'] ?? 0 ?>%"></div>
+                                                    <div class="progress-bar" role="progressbar" style="width: <?= $course['current_grade'] ?? 0 ?>%"></div>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <small class="text-muted"><?= $course['progress'] ?? 0 ?>% Complete</small>
+                                                    <small class="text-muted">Grade: <?= $course['current_grade'] ?? 'N/A' ?></small>
                                                     <div class="btn-group">
                                                         <a href="/lms-frontend/public/student/courses/<?= $course['id'] ?>/materials" class="btn btn-sm btn-outline-primary">
                                                             <i class="fas fa-book"></i>
@@ -150,20 +150,17 @@
                                             <div>
                                                 <h6 class="mb-1"><?= htmlspecialchars($deadline['title']) ?></h6>
                                                 <small class="text-muted">
-                                                    <?= htmlspecialchars($deadline['course_title']) ?> - 
-                                                    <?= ucfirst($deadline['type']) ?>
+                                                    Due: <?= date('M d, Y', strtotime($deadline['due_date'])) ?>
                                                 </small>
                                             </div>
                                             <div class="text-end">
                                                 <span class="badge <?= $isToday ? 'bg-warning' : ($isThisWeek ? 'bg-info' : 'bg-secondary') ?>">
-                                                    <?= date('M d, Y', $dueDate) ?>
+                                                    <?= date('M d, Y', strtotime($deadline['due_date'])) ?>
                                                 </span>
-                                                <?php if ($deadline['type'] === 'assignment'): ?>
-                                                    <a href="/lms-frontend/public/student/courses/<?= $deadline['course_id'] ?>/assignments/<?= $deadline['id'] ?>/submit" 
-                                                       class="btn btn-sm btn-primary ms-2">
-                                                        Submit
-                                                    </a>
-                                                <?php endif; ?>
+                                                <a href="/lms-frontend/public/student/courses/<?= $deadline['course_id'] ?>/assignments/<?= $deadline['id'] ?>/submit" 
+                                                   class="btn btn-sm btn-primary ms-2">
+                                                    Submit
+                                                </a>
                                             </div>
                                         </div>
                                     </div>

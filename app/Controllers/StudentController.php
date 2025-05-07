@@ -38,53 +38,50 @@ class StudentController extends Controller
                 throw new \Exception('Invalid authentication token');
             }
 
-            // Fetch student profile
-            $profileResponse = $this->client->get($this->apiBase . 'student/profile');
-            if ($profileResponse->getStatusCode() !== 200) {
-                throw new \Exception('Failed to fetch profile: ' . $profileResponse->getReasonPhrase());
+            // Fetch dashboard data
+            $dashboardResponse = $this->client->get($this->apiBase . 'student/dashboard');
+            if ($dashboardResponse->getStatusCode() !== 200) {
+                throw new \Exception('Failed to fetch dashboard data: ' . $dashboardResponse->getReasonPhrase());
             }
-            $profileData = json_decode($profileResponse->getBody(), true);
-            $profile = $profileData['data'] ?? [];
-
-            // Fetch enrolled courses
-            $coursesResponse = $this->client->get($this->apiBase . 'student/courses');
-            if ($coursesResponse->getStatusCode() !== 200) {
-                throw new \Exception('Failed to fetch courses: ' . $coursesResponse->getReasonPhrase());
+            $dashboardData = json_decode($dashboardResponse->getBody(), true);
+            
+            // Extract data from response
+            $profile = $dashboardData['profile'] ?? [];
+            $courses = $dashboardData['courses'] ?? [];
+            $deadlines = $dashboardData['upcoming_deadlines'] ?? [];
+            $announcements = $dashboardData['recent_announcements'] ?? [];
+            $notifications = $dashboardData['notifications'] ?? [];
+            
+            // Process calendar events
+            $calendarEvents = [];
+            if (isset($dashboardData['calendar'])) {
+                // Add assignments to calendar
+                foreach ($dashboardData['calendar']['assignments'] as $assignment) {
+                    $calendarEvents[] = [
+                        'title' => $assignment['title'],
+                        'start_date' => $assignment['due_date'],
+                        'end_date' => $assignment['due_date'],
+                        'type' => 'assignment',
+                        'url' => "/lms-frontend/public/student/courses/{$assignment['course_id']}/assignments/{$assignment['id']}/submit"
+                    ];
+                }
+                
+                // Add course dates to calendar
+                foreach ($dashboardData['calendar']['courses'] as $course) {
+                    $calendarEvents[] = [
+                        'title' => $course['title'] . ' (Start)',
+                        'start_date' => $course['start_date'],
+                        'end_date' => $course['start_date'],
+                        'type' => 'course'
+                    ];
+                    $calendarEvents[] = [
+                        'title' => $course['title'] . ' (End)',
+                        'start_date' => $course['end_date'],
+                        'end_date' => $course['end_date'],
+                        'type' => 'course'
+                    ];
+                }
             }
-            $coursesData = json_decode($coursesResponse->getBody(), true);
-            $courses = $coursesData['data'] ?? [];
-
-            // Fetch upcoming deadlines (assignments, quizzes, exams)
-            $deadlinesResponse = $this->client->get($this->apiBase . 'student/deadlines');
-            if ($deadlinesResponse->getStatusCode() !== 200) {
-                throw new \Exception('Failed to fetch deadlines: ' . $deadlinesResponse->getReasonPhrase());
-            }
-            $deadlinesData = json_decode($deadlinesResponse->getBody(), true);
-            $deadlines = $deadlinesData['data'] ?? [];
-
-            // Fetch announcements
-            $announcementsResponse = $this->client->get($this->apiBase . 'student/announcements');
-            if ($announcementsResponse->getStatusCode() !== 200) {
-                throw new \Exception('Failed to fetch announcements: ' . $announcementsResponse->getReasonPhrase());
-            }
-            $announcementsData = json_decode($announcementsResponse->getBody(), true);
-            $announcements = $announcementsData['data'] ?? [];
-
-            // Fetch notifications
-            $notificationsResponse = $this->client->get($this->apiBase . 'student/notifications');
-            if ($notificationsResponse->getStatusCode() !== 200) {
-                throw new \Exception('Failed to fetch notifications: ' . $notificationsResponse->getReasonPhrase());
-            }
-            $notificationsData = json_decode($notificationsResponse->getBody(), true);
-            $notifications = $notificationsData['data'] ?? [];
-
-            // Fetch calendar events
-            $calendarResponse = $this->client->get($this->apiBase . 'student/calendar');
-            if ($calendarResponse->getStatusCode() !== 200) {
-                throw new \Exception('Failed to fetch calendar events: ' . $calendarResponse->getReasonPhrase());
-            }
-            $calendarData = json_decode($calendarResponse->getBody(), true);
-            $calendarEvents = $calendarData['data'] ?? [];
 
             $this->view('student/dashboard', [
                 'profile' => $profile,
