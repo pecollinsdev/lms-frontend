@@ -1,0 +1,348 @@
+/* Global Styles */
+:root {
+    --primary-color: #4e73df;
+    --secondary-color: #2e59d9;
+    --text-color: #5a5c69;
+    --light-bg: #f8f9fc;
+}
+
+body {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Navigation */
+.navbar {
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+}
+
+.nav-link {
+    font-weight: 600;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Hero Section */
+.hero-section {
+    padding-top: 5rem;
+    background: linear-gradient(135deg, #f8f9fc 0%, #e8eaf6 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-section h1 {
+    color: #2e3a59;
+    margin-bottom: 1.5rem;
+}
+
+.hero-section .lead {
+    color: #6c757d;
+    font-size: 1.25rem;
+}
+
+.hero-image {
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.hero-image:hover {
+    transform: translateY(-5px);
+}
+
+/* Feature Cards */
+.feature-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin: 1rem 0;
+    color: #2e3a59;
+}
+
+.feature-card p {
+    color: #6c757d;
+}
+
+/* About Section */
+#about {
+    background-color: var(--light-bg);
+}
+
+#about h2 {
+    color: #2e3a59;
+}
+
+#about .lead {
+    color: #6c757d;
+}
+
+.about-image {
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.about-image:hover {
+    transform: translateY(-5px);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Footer */
+footer {
+    background-color: #2e3a59;
+}
+
+footer h5 {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+footer a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        text-align: center;
+        padding-top: 7rem;
+    }
+    
+    .hero-section .btn {
+        margin: 0.5rem;
+    }
+    
+    .feature-card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-section, .feature-card, #about {
+    animation: fadeIn 1s ease-out;
+}
+
+/* Registration Page */
+.registration-section {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f9fc 0%, #e8eaf6 100%);
+}
+
+.card {
+    border: none;
+}
+
+/* Remove hover effect from registration card */
+.registration-section .card:hover {
+    transform: none;
+}
+
+/* Mobile registration adjustments */
+@media (max-width: 768px) {
+    .registration-section {
+        padding-top: 2rem;
+        padding-bottom: 0;
+    }
+
+    .registration-section .container {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .registration-section .card {
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .registration-section .card-body {
+        padding: 1.5rem;
+    }
+}
+
+.btn-check:checked + .btn-outline-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    transition: none !important;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    transition: none !important;
+}
+
+/* Form validation container */
+.feedback-container {
+    position: relative;
+    min-height: 1.5rem;
+}
+
+.feedback-container .form-text,
+.feedback-container .invalid-feedback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+}
+
+.invalid-feedback {
+    display: block;
+    min-height: 1.25em;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+    opacity: 0;
+    transition: none !important;
+    animation: none !important;
+}
+
+.invalid-feedback.active {
+    opacity: 1;
+}
+
+.feedback-container .invalid-feedback {
+    visibility: hidden;
+}
+
+.feedback-container .invalid-feedback.active {
+    visibility: visible;
+}
+
+.feedback-container .form-text.hidden {
+    visibility: hidden;
+}
+
+/* Reserve space for inputs without helper text */
+.mb-3:not(:has(.form-text)) .invalid-feedback {
+    display: block !important;
+    min-height: 1.25em;
+    opacity: 0;
+    margin-top: 0.25rem;
+    pointer-events: none;
+}
+
+.mb-3:not(:has(.form-text)) .invalid-feedback.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Fallback for no :has support */
+@supports not (selector(:has(*))) {
+  .mb-3 .invalid-feedback {
+    display: block !important;
+    min-height: 1.25em;
+    opacity: 0;
+    margin-top: 0.25rem;
+    pointer-events: none;
+    transition: none !important;
+    animation: none !important;
+  }
+  .mb-3 .invalid-feedback.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .mb-3 .form-text + .invalid-feedback {
+    min-height: 0;
+    margin-top: 0;
+  }
+}
+
+/* Role selection buttons */
+.btn-group .btn-outline-primary:hover {
+    transform: none !important;
+    background-color: transparent !important;
+    color: var(--primary-color) !important;
+}
+
+.btn-check:checked + .btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    transform: none !important;
+}
