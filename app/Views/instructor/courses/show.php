@@ -53,140 +53,154 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-5 pt-5">
-        <div class="mb-3">
-            <a href="/lms-frontend/public/instructor/courses" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Back to Courses
-            </a>
-        </div>
+    <div class="container mt-5 pt-4">
+      <div class="row justify-content-center">
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+          <div class="card shadow-sm mb-4 border-0 rounded-4" style="padding: 0.5rem 0.5rem 0.5rem 0.5rem;">
+            <div class="card-body p-4">
+              <h4 class="fw-semibold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Course Overview</h4>
+              <p class="text-muted fs-5 mb-0">
+                <?= nl2br(htmlspecialchars($course['description'] ?? 'No description provided.')) ?>
+              </p>
+            </div>
+          </div>
 
-        <?php if (!empty($error)): ?>
-            <div class="alert alert-danger" role="alert">
-                <?= htmlspecialchars($error) ?>
+          <?php if (!empty($course['modules'])): ?>
+          <div class="card mb-4 border-0 shadow-sm rounded-4">
+            <div class="card-header bg-primary text-white d-flex align-items-center rounded-top-4" style="padding: 1rem 1.5rem;">
+              <i class="fas fa-layer-group me-2"></i>
+              <h5 class="mb-0">Course Modules</h5>
             </div>
-            <?php if (!empty($course)): ?>
-                <pre class="bg-light p-2 border rounded small"><?= htmlspecialchars(json_encode($course, JSON_PRETTY_PRINT)) ?></pre>
-            <?php endif; ?>
-        <?php elseif (empty($course) || empty($course['id'])): ?>
-            <div class="alert alert-warning" role="alert">
-                Course not found or could not be loaded.
-            </div>
-            <pre class="bg-light p-2 border rounded small"><?php echo htmlspecialchars(json_encode($course, JSON_PRETTY_PRINT)); ?></pre>
-        <?php else: ?>
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h2 class="mb-1"><?= htmlspecialchars($course['title'] ?? 'Untitled Course') ?></h2>
-                        <div class="mb-2">
-                            <span class="badge bg-primary me-1"><?= ucfirst($course['level'] ?? 'Not specified') ?></span>
-                            <span class="badge bg-secondary"><?= ucfirst($course['category'] ?? 'Uncategorized') ?></span>
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/edit" class="btn btn-outline-primary">
-                            <i class="fas fa-edit me-1"></i> Edit
-                        </a>
-                        <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/assignments" class="btn btn-outline-success">
-                            <i class="fas fa-tasks me-1"></i> Assignments
-                        </a>
-                        <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/students" class="btn btn-outline-info">
-                            <i class="fas fa-user-graduate me-1"></i> Students
-                        </a>
-                        <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/progress" class="btn btn-outline-warning">
-                            <i class="fas fa-chart-line me-1"></i> Progress
-                        </a>
-                    </div>
-                </div>
-                <p class="text-muted mb-3">
-                    <?= nl2br(htmlspecialchars($course['description'] ?? 'No description provided.')) ?>
-                </p>
-                <div class="row mb-3">
-                    <div class="col-md-3 mb-2">
-                        <i class="fas fa-users me-1"></i> <strong><?= $course['student_count'] ?? 0 ?></strong> Students
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <i class="fas fa-tasks me-1"></i> <strong><?= $course['assignment_count'] ?? 0 ?></strong> Assignments
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <i class="fas fa-layer-group me-1"></i> <strong><?= $course['module_count'] ?? 0 ?></strong> Modules
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <i class="fas fa-list me-1"></i> <strong><?= $course['total_items'] ?? 0 ?></strong> Items
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-12">
-                        <i class="fas fa-calendar me-1"></i>
-                        <?php if (!empty($course['start_date']) && !empty($course['end_date'])): ?>
-                            <?= date('M d, Y', strtotime($course['start_date'])) ?> -
-                            <?= date('M d, Y', strtotime($course['end_date'])) ?>
+            <div class="card-body p-4">
+              <div class="accordion" id="modulesAccordion">
+                <?php foreach ($course['modules'] as $idx => $module): ?>
+                  <div class="accordion-item mb-3 border-0 shadow-sm rounded-3">
+                    <h2 class="accordion-header" id="heading<?= $idx ?>">
+                      <button class="accordion-button collapsed fw-bold fs-5 rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $idx ?>" aria-expanded="false" aria-controls="collapse<?= $idx ?>">
+                        <i class="fas fa-book-open me-2 text-secondary"></i><?= htmlspecialchars($module['title']) ?>
+                        <span class="badge bg-light text-dark ms-3">Items: <?= count($module['module_items'] ?? []) ?></span>
+                      </button>
+                    </h2>
+                    <div id="collapse<?= $idx ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $idx ?>" data-bs-parent="#modulesAccordion">
+                      <div class="accordion-body">
+                        <p class="text-muted mb-2"> <?= htmlspecialchars($module['description'] ?? '') ?> </p>
+                        <?php if (!empty($module['module_items'])): ?>
+                          <ul class="list-group list-group-flush">
+                            <?php foreach ($module['module_items'] as $item): ?>
+                              <li class="list-group-item d-flex justify-content-between align-items-center bg-light border-0 mb-2 rounded-2 px-3 py-2" style="box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+                                <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/module/<?= $module['id'] ?>/item/<?= $item['id'] ?>" class="text-decoration-none text-dark w-100">
+                                  <div>
+                                    <i class="<?= $item['type'] === 'assignment' ? 'fas fa-tasks text-success' : ($item['type'] === 'quiz' ? 'fas fa-question-circle text-warning' : 'fas fa-file-alt text-info') ?> me-2"></i>
+                                    <span class="fw-semibold"> <?= htmlspecialchars($item['title']) ?> </span>
+                                    <span class="badge bg-secondary ms-2"> <?= ucfirst($item['type']) ?> </span>
+                                    <div class="small text-muted ms-4"> <?= htmlspecialchars($item['description'] ?? '') ?> </div>
+                                  </div>
+                                  <?php if (!empty($item['due_date'])): ?>
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Due: <?= date('M d, Y', strtotime($item['due_date'])) ?></span>
+                                  <?php endif; ?>
+                                </a>
+                              </li>
+                            <?php endforeach; ?>
+                          </ul>
                         <?php else: ?>
-                            Dates not set
+                          <div class="alert alert-info mb-0 rounded-2">
+                            <i class="fas fa-info-circle me-1"></i> No items in this module yet.
+                          </div>
                         <?php endif; ?>
+                      </div>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Course Progress</label>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
+          </div>
+          <?php endif; ?>
+
+          <?php if (!empty($course['students'])): ?>
+          <div class="card mb-4 border-0 shadow-sm rounded-4">
+            <div class="card-header bg-info text-white d-flex align-items-center rounded-top-4" style="padding: 1rem 1.5rem;">
+              <i class="fas fa-user-graduate me-2"></i>
+              <h5 class="mb-0">Enrolled Students</h5>
+            </div>
+            <div class="card-body p-4">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>ID</th>
+                      <th>Enrollment Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($course['students'] as $student): ?>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <?php if (!empty($student['avatar'])): ?>
+                              <img src="<?= htmlspecialchars($student['avatar']) ?>" class="rounded-circle me-2" width="32" height="32" alt="Avatar">
+                            <?php else: ?>
+                              <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                <?= strtoupper(substr($student['name'], 0, 1)) ?>
+                              </div>
+                            <?php endif; ?>
+                            <?= htmlspecialchars($student['name']) ?>
+                          </div>
+                        </td>
+                        <td><?= htmlspecialchars($student['email']) ?></td>
+                        <td><?= htmlspecialchars($student['id']) ?></td>
+                        <td>
+                          <?php if (!empty($student['enrollment_date'])): ?>
+                            <?= date('M d, Y', strtotime($student['enrollment_date'])) ?>
+                          <?php else: ?>
+                            N/A
+                          <?php endif; ?>
+                        </td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <?php endif; ?>
+        </div>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+          <div class="card shadow-sm mb-4 border-0 rounded-4" style="padding: 0.5rem 0.5rem 0.5rem 0.5rem;">
+            <div class="card-body p-4">
+              <h5 class="fw-bold mb-3"><i class="fas fa-cogs me-2 text-primary"></i>Quick Actions</h5>
+              <div class="d-grid gap-2 mb-3">
+                <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/edit" class="btn btn-outline-primary"><i class="fas fa-edit me-1"></i> Edit Course</a>
+                <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/assignments" class="btn btn-outline-success"><i class="fas fa-tasks me-1"></i> Assignments</a>
+                <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/students" class="btn btn-outline-info"><i class="fas fa-user-graduate me-1"></i> Students</a>
+                <a href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?? '' ?>/progress" class="btn btn-outline-warning"><i class="fas fa-chart-line me-1"></i> Progress</a>
+              </div>
+              <hr>
+              <h6 class="fw-semibold mb-2">Course Stats</h6>
+              <ul class="list-unstyled mb-0">
+                <li class="mb-2"><i class="fas fa-users me-2 text-secondary"></i> <strong><?= count($course['students'] ?? []) ?></strong> Students</li>
+                <li class="mb-2"><i class="fas fa-layer-group me-2 text-secondary"></i> <strong><?= count($course['modules'] ?? []) ?></strong> Modules</li>
+                <li class="mb-2"><i class="fas fa-calendar me-2 text-secondary"></i> <?= !empty($course['start_date']) ? date('M d, Y', strtotime($course['start_date'])) : 'N/A' ?> - <?= !empty($course['end_date']) ? date('M d, Y', strtotime($course['end_date'])) : 'N/A' ?></li>
+                <li class="mb-2"><i class="fas fa-user me-2 text-secondary"></i> <?= htmlspecialchars($course['instructor']['name'] ?? 'Unknown') ?></li>
+                <?php if (isset($course['progress'])): ?>
+                  <li class="mb-2">
+                    <div class="mb-1">Progress</div>
                     <div class="progress" style="height: 8px;">
-                        <div class="progress-bar" role="progressbar"
-                             style="width: <?= $course['progress'] ?? 0 ?>%"
-                             aria-valuenow="<?= $course['progress'] ?? 0 ?>"
-                             aria-valuemin="0" aria-valuemax="100">
-                        </div>
+                      <div class="progress-bar bg-success" role="progressbar" style="width: <?= $course['progress'] ?? 0 ?>%" aria-valuenow="<?= $course['progress'] ?? 0 ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <small class="text-muted">Progress: <?= $course['progress'] ?? 0 ?>%</small>
-                </div>
+                  </li>
+                <?php endif; ?>
+              </ul>
             </div>
+          </div>
         </div>
-        <?php endif; ?>
-
-        <?php if (!empty($modules)): ?>
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Course Modules</h5>
-            </div>
-            <div class="card-body">
-                <?php foreach ($modules as $module): ?>
-                    <div class="mb-4 border rounded p-3 bg-light">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0">Module: <?= htmlspecialchars($module['title']) ?></h5>
-                            <span class="text-muted small">
-                                <?php if (!empty($module['start_date']) && !empty($module['end_date'])): ?>
-                                    <?= date('M d, Y', strtotime($module['start_date'])) ?> - <?= date('M d, Y', strtotime($module['end_date'])) ?>
-                                <?php endif; ?>
-                            </span>
-                        </div>
-                        <div class="mb-2 text-muted"> <?= htmlspecialchars($module['description'] ?? '') ?> </div>
-                        <?php if (!empty($module['items'])): ?>
-                            <ul class="list-group">
-                                <?php foreach ($module['items'] as $item): ?>
-                                    <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center p-0">
-                                        <a href="/lms-frontend/public/instructor/module-items/<?= $item['id'] ?>" class="d-flex flex-grow-1 flex-column flex-md-row justify-content-between align-items-md-center text-decoration-none text-dark p-3">
-                                            <div>
-                                                <strong><?= htmlspecialchars($item['title']) ?></strong>
-                                                <span class="badge bg-secondary ms-2"> <?= ucfirst($item['type']) ?> </span>
-                                                <div class="small text-muted"> <?= htmlspecialchars($item['description'] ?? '') ?> </div>
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
-                                                <?php if (!empty($item['due_date'])): ?>
-                                                    <span class="badge bg-warning text-dark">Due: <?= date('M d, Y', strtotime($item['due_date'])) ?></span>
-                                                <?php endif; ?>
-                                                <i class="fas fa-chevron-right ms-2"></i>
-                                            </div>
-                                        </a>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php else: ?>
-                            <div class="text-muted small">No items in this module.</div>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
+      </div>
     </div>
+    <!-- End Modernized Layout -->
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

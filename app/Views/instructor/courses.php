@@ -81,15 +81,13 @@
                         <div class="card h-100 shadow-sm border-0">
                             <?php if (!empty($course['cover_image'])): ?>
                                 <img src="<?= htmlspecialchars($course['cover_image']) ?>" class="card-img-top" alt="Course Cover" style="object-fit:cover;max-height:180px;">
+                            <?php else: ?>
+                                <img src="https://placehold.co/1200x675" class="card-img-top" alt="Course Cover" style="object-fit:cover;max-height:180px;">
                             <?php endif; ?>
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div>
                                         <h5 class="card-title mb-1"><?= htmlspecialchars($course['title']) ?></h5>
-                                        <div class="mb-2">
-                                            <span class="badge bg-primary me-1"> <?= ucfirst($course['level'] ?? 'Not specified') ?> </span>
-                                            <span class="badge bg-secondary"> <?= ucfirst($course['category'] ?? 'Uncategorized') ?> </span>
-                                        </div>
                                     </div>
                                     <?php if (!empty($course['is_published'])): ?>
                                         <span class="badge bg-success align-self-start">Published</span>
@@ -103,16 +101,16 @@
                                 </p>
                                 <div class="row text-center mb-2 g-1">
                                     <div class="col-6 col-md-4">
-                                        <span class="text-muted small"><i class="fas fa-users me-1"></i> <?= $course['student_count'] ?? 0 ?> Students</span>
+                                        <span class="text-muted small"><i class="fas fa-users me-1"></i> <?= $course['statistics']['student_count'] ?? 0 ?> Students</span>
                                     </div>
                                     <div class="col-6 col-md-4">
-                                        <span class="text-muted small"><i class="fas fa-tasks me-1"></i> <?= $course['assignment_count'] ?? 0 ?> Assignments</span>
+                                        <span class="text-muted small"><i class="fas fa-tasks me-1"></i> <?= $course['statistics']['submission_count'] ?? 0 ?> Submissions</span>
                                     </div>
                                     <div class="col-6 col-md-4">
-                                        <span class="text-muted small"><i class="fas fa-layer-group me-1"></i> <?= $course['module_count'] ?? 0 ?> Modules</span>
+                                        <span class="text-muted small"><i class="fas fa-layer-group me-1"></i> <?= $course['statistics']['module_count'] ?? 0 ?> Modules</span>
                                     </div>
                                     <div class="col-6 col-md-4">
-                                        <span class="text-muted small"><i class="fas fa-list me-1"></i> <?= $course['total_items'] ?? 0 ?> Items</span>
+                                        <span class="text-muted small"><i class="fas fa-list me-1"></i> <?= $course['statistics']['total_items'] ?? 0 ?> Items</span>
                                     </div>
                                     <div class="col-6 col-md-4">
                                         <span class="text-muted small"><i class="fas fa-calendar me-1"></i>
@@ -121,6 +119,11 @@
                                             <?php else: ?>
                                                 Dates not set
                                             <?php endif; ?>
+                                        </span>
+                                    </div>
+                                    <div class="col-6 col-md-4">
+                                        <span class="text-muted small">
+                                            <i class="fas fa-user me-1"></i> <?= htmlspecialchars($course['instructor']['name'] ?? 'Unknown') ?>
                                         </span>
                                     </div>
                                 </div>
@@ -159,7 +162,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item text-danger" href="#" onclick="return confirm('Are you sure you want to delete this course?')">
+                                            <a class="dropdown-item text-danger" href="/lms-frontend/public/instructor/courses/<?= $course['id'] ?>/delete" onclick="return confirm('Are you sure you want to delete this course? This will also delete all modules and items within it.')">
                                                 <i class="fas fa-trash me-1"></i> Delete Course
                                             </a>
                                         </li>
@@ -170,14 +173,15 @@
                     </div>
                 <?php endforeach; ?>
             </div>
+
             <!-- Pagination Controls -->
-            <?php if (!empty($courses['total']) && !empty($courses['per_page']) && ceil($courses['total'] / $courses['per_page']) > 1): ?>
+            <?php if (!empty($courses['meta']['total']) && !empty($courses['meta']['per_page']) && ceil($courses['meta']['total'] / $courses['meta']['per_page']) > 1): ?>
                 <div class="mt-4">
                     <nav aria-label="Course pagination">
                         <ul class="pagination justify-content-center">
                             <?php
-                            $currentPage = $courses['current_page'] ?? 1;
-                            $lastPage = ceil($courses['total'] / $courses['per_page']);
+                            $currentPage = $courses['meta']['current_page'] ?? 1;
+                            $lastPage = ceil($courses['meta']['total'] / $courses['meta']['per_page']);
                             
                             // Previous page link
                             if ($currentPage > 1): ?>

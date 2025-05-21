@@ -67,6 +67,8 @@ class AuthController extends Controller
             if ($token) {
                 // Set the token cookie
                 setcookie('token', $token, time() + 3600, '/', '', false, true); // HttpOnly cookie
+                // Set the role cookie
+                setcookie('user_role', $role, time() + 3600, '/', '', false, false);
             }
     
             // Redirect based on role
@@ -134,7 +136,18 @@ class AuthController extends Controller
                 }
             }
             
-            $role = $body['data']['user']['role'] ?? $body['data']['role'] ?? $body['role'] ?? 'student';
+            // Improved role detection with better fallback chain
+            $role = null;
+            if (isset($body['data']['user']['role'])) {
+                $role = $body['data']['user']['role'];
+            } elseif (isset($body['data']['role'])) {
+                $role = $body['data']['role'];
+            } elseif (isset($body['role'])) {
+                $role = $body['role'];
+            } else {
+                // If no role found in response, use the role from the login request
+                $role = $_POST['role'] ?? 'student';
+            }
             
             // Debug role detection
             error_log('Detected Role: ' . $role);
@@ -147,15 +160,17 @@ class AuthController extends Controller
     
             // Set the token cookie
             setcookie('token', $token, time() + 3600, '/', '', false, true); // HttpOnly cookie
+            // Set the role cookie
+            setcookie('user_role', $role, time() + 3600, '/', '', false, false);
     
             // Debug before redirect
-            error_log('Redirecting to: ' . ($role === 'instructor' ? '/lms-frontend/public/instructor/dashboard' : '/lms-frontend/public/dashboard'));
+            error_log('Redirecting to: ' . ($role === 'instructor' ? '/lms-frontend/public/instructor/dashboard' : '/lms-frontend/public/student/dashboard'));
             
             // Redirect based on role
             if ($role === 'instructor') {
                 header('Location: /lms-frontend/public/instructor/dashboard');
             } else {
-                header('Location: /lms-frontend/public/dashboard');
+                header('Location: /lms-frontend/public/student/dashboard');
             }
             exit;
         } catch (\GuzzleHttp\Exception\ClientException $e) {
@@ -225,6 +240,8 @@ class AuthController extends Controller
 
         // Clear the token cookie by setting it to expire in the past
         setcookie('token', '', time() - 3600, '/', '', false, true);
+        // Clear the role cookie
+        setcookie('user_role', '', time() - 3600, '/', '', false, false);
         
         // Redirect to login page
         header('Location: /lms-frontend/public/login');

@@ -44,7 +44,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-5 pt-4">
+    <div class="container mt-5 pt-5">
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger" role="alert">
                 <?= htmlspecialchars($error) ?>
@@ -73,7 +73,7 @@
                 <div class="card bg-primary text-white">
                     <div class="card-body">
                         <h5 class="card-title">Current GPA</h5>
-                        <h2 class="mb-0"><?= number_format($profile['gpa'] ?? 0, 2) ?></h2>
+                        <h2 class="mb-0"><?= number_format(min(max($gpa ?? 0, 0), 4.0), 2) ?></h2>
                     </div>
                 </div>
             </div>
@@ -98,25 +98,42 @@
                                 <?php foreach ($courses as $course): ?>
                                     <div class="col">
                                         <div class="card h-100">
+                                            <?php if (!empty($course['thumbnail'])): ?>
+                                                <img src="<?= htmlspecialchars($course['thumbnail']) ?>" 
+                                                     class="card-img-top" 
+                                                     alt="<?= htmlspecialchars($course['title']) ?>"
+                                                     style="height: 120px; object-fit: cover;">
+                                            <?php endif; ?>
                                             <div class="card-body">
                                                 <h5 class="card-title"><?= htmlspecialchars($course['title']) ?></h5>
                                                 <p class="card-text text-muted">
                                                     <small>Instructor: <?= htmlspecialchars($course['instructor'] ?? 'Not assigned') ?></small>
                                                 </p>
                                                 <div class="progress mb-3" style="height: 5px;">
-                                                    <div class="progress-bar" role="progressbar" style="width: <?= $course['current_grade'] ?? 0 ?>%"></div>
+                                                    <div class="progress-bar" role="progressbar" 
+                                                         style="width: <?= $course['completion_percentage'] ?? 0 ?>%"
+                                                         aria-valuenow="<?= $course['completion_percentage'] ?? 0 ?>"
+                                                         aria-valuemin="0"
+                                                         aria-valuemax="100">
+                                                    </div>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <small class="text-muted">Grade: <?= $course['current_grade'] ?? 'N/A' ?></small>
+                                                    <div class="text-muted">
+                                                        <small>Progress: <?= $course['completion_percentage'] ?? 0 ?>%</small><br>
+                                                        <small>Grade: <?= htmlspecialchars($course['current_grade'] ?? 'N/A') ?></small>
+                                                    </div>
                                                     <div class="btn-group">
-                                                        <a href="/lms-frontend/public/student/courses/<?= $course['id'] ?>/materials" class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-book"></i>
+                                                        <a href="/lms-frontend/public/student/courses/<?= $course['id'] ?>/content" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-folder"></i>
                                                         </a>
-                                                        <a href="/lms-frontend/public/student/courses/<?= $course['id'] ?>/assignments" class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-tasks"></i>
+                                                        <a href="/lms-frontend/public/student/courses/<?= $course['id'] ?>/grades" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-graduation-cap"></i>
                                                         </a>
-                                                        <a href="/lms-frontend/public/student/courses/<?= $course['id'] ?>/discussions" class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-comments"></i>
+                                                        <a href="/lms-frontend/public/student/courses/<?= $course['id'] ?>/announcements" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-bullhorn"></i>
                                                         </a>
                                                     </div>
                                                 </div>
@@ -135,29 +152,34 @@
                         <h5 class="mb-0">Upcoming Deadlines</h5>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($deadlines)): ?>
+                        <?php if (empty($upcomingDeadlines)): ?>
                             <p class="text-muted mb-0">No upcoming deadlines.</p>
                         <?php else: ?>
                             <div class="list-group">
-                                <?php foreach ($deadlines as $deadline): ?>
+                                <?php foreach ($upcomingDeadlines as $deadline): ?>
                                     <?php
                                     $dueDate = strtotime($deadline['due_date']);
-                                    $isThisWeek = $dueDate <= strtotime('+7 days');
-                                    $isToday = date('Y-m-d', $dueDate) === date('Y-m-d');
+                                    $isToday = date('Y-m-d') === date('Y-m-d', $dueDate);
+                                    $isThisWeek = date('Y-m-d', strtotime('+7 days')) >= date('Y-m-d', $dueDate);
+                                    $typeIcon = $deadline['type'] === 'assignment' ? 'fa-tasks' : 'fa-question-circle';
+                                    $typeClass = $deadline['type'] === 'assignment' ? 'text-primary' : 'text-warning';
                                     ?>
                                     <div class="list-group-item <?= $isToday ? 'list-group-item-warning' : ($isThisWeek ? 'list-group-item-info' : '') ?>">
                                         <div class="d-flex w-100 justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1"><?= htmlspecialchars($deadline['title']) ?></h6>
+                                                <h6 class="mb-1">
+                                                    <i class="fas <?= $typeIcon ?> <?= $typeClass ?> me-2"></i>
+                                                    <?= htmlspecialchars($deadline['title']) ?>
+                                                </h6>
                                                 <small class="text-muted">
-                                                    Due: <?= date('M d, Y', strtotime($deadline['due_date'])) ?>
+                                                    Course: <?= htmlspecialchars($deadline['course_title'] ?? 'Unknown Course') ?>
                                                 </small>
                                             </div>
                                             <div class="text-end">
                                                 <span class="badge <?= $isToday ? 'bg-warning' : ($isThisWeek ? 'bg-info' : 'bg-secondary') ?>">
                                                     <?= date('M d, Y', strtotime($deadline['due_date'])) ?>
                                                 </span>
-                                                <a href="/lms-frontend/public/student/courses/<?= $deadline['course_id'] ?>/assignments/<?= $deadline['id'] ?>/submit" 
+                                                <a href="/lms-frontend/public/student/module-items/<?= $deadline['id'] ?>/submit" 
                                                    class="btn btn-sm btn-primary ms-2">
                                                     Submit
                                                 </a>
@@ -182,14 +204,18 @@
                         <?php if (empty($announcements)): ?>
                             <p class="text-muted mb-0">No recent announcements.</p>
                         <?php else: ?>
-                            <div class="list-group list-group-flush">
+                            <div class="list-group">
                                 <?php foreach ($announcements as $announcement): ?>
-                                    <div class="list-group-item px-0">
-                                        <h6 class="mb-1"><?= htmlspecialchars($announcement['title']) ?></h6>
-                                        <p class="mb-1 small"><?= htmlspecialchars($announcement['content']) ?></p>
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1"><?= htmlspecialchars($announcement['title'] ?? '') ?></h6>
+                                            <small class="text-muted">
+                                                <?= date('M d', strtotime($announcement['created_at'] ?? '')) ?>
+                                            </small>
+                                        </div>
+                                        <p class="mb-1"><?= htmlspecialchars($announcement['content'] ?? '') ?></p>
                                         <small class="text-muted">
-                                            <?= htmlspecialchars($announcement['course_title'] ?? 'System') ?> - 
-                                            <?= date('M d, Y', strtotime($announcement['created_at'])) ?>
+                                            Course: <?= htmlspecialchars($announcement['course']['title'] ?? 'Unknown Course') ?>
                                         </small>
                                     </div>
                                 <?php endforeach; ?>
@@ -198,28 +224,34 @@
                     </div>
                 </div>
 
-                <!-- Messages / Notifications -->
+                <!-- Recent Submissions -->
                 <div class="card mb-4">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0">Messages & Notifications</h5>
+                        <h5 class="mb-0">Recent Submissions</h5>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($notifications)): ?>
-                            <p class="text-muted mb-0">No new messages or notifications.</p>
+                        <?php if (empty($recentSubmissions)): ?>
+                            <p class="text-muted mb-0">No recent submissions.</p>
                         <?php else: ?>
-                            <div class="list-group list-group-flush">
-                                <?php foreach ($notifications as $notification): ?>
-                                    <div class="list-group-item px-0">
-                                        <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0">
-                                                <i class="fas <?= $notification['type'] === 'message' ? 'fa-envelope' : 'fa-bell' ?> 
-                                                           <?= $notification['type'] === 'message' ? 'text-primary' : 'text-warning' ?>"></i>
-                                            </div>
-                                            <div class="flex-grow-1 ms-3">
-                                                <p class="mb-1"><?= htmlspecialchars($notification['message']) ?></p>
+                            <div class="list-group">
+                                <?php foreach ($recentSubmissions as $submission): ?>
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1"><?= htmlspecialchars($submission['module_item_title'] ?? '') ?></h6>
                                                 <small class="text-muted">
-                                                    <?= date('M d, Y H:i', strtotime($notification['created_at'])) ?>
+                                                    Course: <?= htmlspecialchars($submission['course_title'] ?? 'Unknown Course') ?>
                                                 </small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge bg-<?= ($submission['status'] ?? '') === 'graded' ? 'success' : 'warning' ?>">
+                                                    <?= ucfirst($submission['status'] ?? 'pending') ?>
+                                                </span>
+                                                <?php if (($submission['status'] ?? '') === 'graded'): ?>
+                                                    <span class="ms-2">
+                                                        Grade: <?= $submission['grade_display'] ?? 'N/A' ?>
+                                                    </span>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>
@@ -229,13 +261,35 @@
                     </div>
                 </div>
 
-                <!-- Calendar -->
-                <div class="card">
+                <!-- Course Progress -->
+                <div class="card mb-4">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0">Calendar</h5>
+                        <h5 class="mb-0">Course Progress</h5>
                     </div>
                     <div class="card-body">
-                        <div id="calendar"></div>
+                        <?php if (empty($progress)): ?>
+                            <p class="text-muted mb-0">No progress data available.</p>
+                        <?php else: ?>
+                            <div class="list-group">
+                                <?php foreach ($progress as $item): ?>
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1"><?= htmlspecialchars($item['module_item_title'] ?? '') ?></h6>
+                                                <small class="text-muted">
+                                                    Course: <?= htmlspecialchars($item['course_title'] ?? 'Unknown Course') ?>
+                                                </small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge bg-<?= ($item['status'] ?? '') === 'completed' ? 'success' : 'warning' ?>">
+                                                    <?= ucfirst($item['status'] ?? 'pending') ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -246,34 +300,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
-                },
-                events: <?= json_encode(array_map(function($event) {
-                    return [
-                        'title' => $event['title'],
-                        'start' => $event['start_date'],
-                        'end' => $event['end_date'],
-                        'url' => $event['url'] ?? null,
-                        'backgroundColor' => $event['type'] === 'assignment' ? '#dc3545' : 
-                                          ($event['type'] === 'quiz' ? '#ffc107' : '#0dcaf0')
-                    ];
-                }, $calendarEvents)) ?>,
-                eventClick: function(info) {
-                    if (info.event.url) {
-                        window.location.href = info.event.url;
-                    }
-                }
-            });
-            calendar.render();
-        });
-    </script>
 </body>
 </html> 

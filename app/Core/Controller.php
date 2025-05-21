@@ -7,6 +7,10 @@ class Controller
     protected function view(string $view, array $data = [])
     {
         extract($data);
-        require_once "../app/Views/{$view}.php";
+        $viewPath = dirname(__DIR__, 2) . "/app/Views/{$view}.php";
+        if (!file_exists($viewPath)) {
+            throw new \Exception("View file not found: {$viewPath}");
+        }
+        require_once $viewPath;
     }
 }
